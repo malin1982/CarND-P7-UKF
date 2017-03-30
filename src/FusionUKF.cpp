@@ -144,7 +144,7 @@ void FusionUKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
      * Update the process noise covariance matrix.
      * Use noise_ax = 9 and noise_ay = 9 for your Q matrix.
    */
-   //compute the time elapsed between the current and previous measurements
+  //compute the time elapsed between the current and previous measurements
  	float dt = (measurement_pack.timestamp_ - previous_timestamp_) / 1000000.0;	//dt - expressed in seconds
  	previous_timestamp_ = measurement_pack.timestamp_;
 
