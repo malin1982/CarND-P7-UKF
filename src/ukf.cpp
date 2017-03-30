@@ -117,7 +117,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     previous_timestamp_ = measurement_pack.timestamp_;
     is_initialized_ = true;
     return;
-}
+  }
 
 /**
  * Predicts sigma points, the state, and the state covariance matrix.
@@ -163,8 +163,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   */
 }
 
-
-void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_aug_) {
+void UKF::AugmentedSigmaPoints() {
   //create augmented mean vector
   VectorXd x_aug = VectorXd(7);
 
@@ -175,13 +174,13 @@ void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_aug_) {
   //MatrixXd Xsig_aug = MatrixXd(n_aug, 2 * n_aug + 1);
 
   //create augmented mean state
-  x_aug.head(5) = x;
+  x_aug.head(5) = x_;
   x_aug(5) = 0;
   x_aug(6) = 0;
 
   //create augmented covariance matrix
   P_aug.fill(0.0);
-  P_aug.topLeftCorner(5,5) = P;
+  P_aug.topLeftCorner(5,5) = P_;
   P_aug(5,5) = std_a*std_a;
   P_aug(6,6) = std_yawdd*std_yawdd;
 
@@ -353,53 +352,13 @@ void UKF::PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out) {
 }
 void UKF::UpdateState(VectorXd* x_out, MatrixXd* P_out) {
 
-  //set state dimension
-  int n_x = 5;
-
-  //set augmented dimension
-  int n_aug = 7;
-
-  //set measurement dimension, radar can measure r, phi, and r_dot
-  int n_z = 3;
-
-  //define spreading parameter
-  double lambda = 3 - n_aug;
-
-  //set vector for weights
-  VectorXd weights = VectorXd(2*n_aug+1);
-   double weight_0 = lambda/(lambda+n_aug);
-  weights(0) = weight_0;
+  double weight_0 = lambda/(lambda+n_aug);
+  weights_(0) = weight_0;
   for (int i=1; i<2*n_aug+1; i++) {  //2n+1 weights
     double weight = 0.5/(n_aug+lambda);
-    weights(i) = weight;
+    weights_(i) = weight;
   }
 
-  //create example matrix with predicted sigma points
-  MatrixXd Xsig_pred = MatrixXd(n_x, 2 * n_aug + 1);
-  Xsig_pred <<
-         5.9374,  6.0640,   5.925,  5.9436,  5.9266,  5.9374,  5.9389,  5.9374,  5.8106,  5.9457,  5.9310,  5.9465,  5.9374,  5.9359,  5.93744,
-           1.48,  1.4436,   1.660,  1.4934,  1.5036,    1.48,  1.4868,    1.48,  1.5271,  1.3104,  1.4787,  1.4674,    1.48,  1.4851,    1.486,
-          2.204,  2.2841,  2.2455,  2.2958,   2.204,   2.204,  2.2395,   2.204,  2.1256,  2.1642,  2.1139,   2.204,   2.204,  2.1702,   2.2049,
-         0.5367, 0.47338, 0.67809, 0.55455, 0.64364, 0.54337,  0.5367, 0.53851, 0.60017, 0.39546, 0.51900, 0.42991, 0.530188,  0.5367, 0.535048,
-          0.352, 0.29997, 0.46212, 0.37633,  0.4841, 0.41872,   0.352, 0.38744, 0.40562, 0.24347, 0.32926,  0.2214, 0.28687,   0.352, 0.318159;
-
-  //create example vector for predicted state mean
-  VectorXd x = VectorXd(n_x);
-  x <<
-     5.93637,
-     1.49035,
-     2.20528,
-    0.536853,
-    0.353577;
-
-  //create example matrix for predicted state covariance
-  MatrixXd P = MatrixXd(n_x,n_x);
-  P <<
-  0.0054342,  -0.002405,  0.0034157, -0.0034819, -0.00299378,
-  -0.002405,    0.01084,   0.001492,  0.0098018,  0.00791091,
-  0.0034157,   0.001492,  0.0058012, 0.00077863, 0.000792973,
- -0.0034819,  0.0098018, 0.00077863,   0.011923,   0.0112491,
- -0.0029937,  0.0079109, 0.00079297,   0.011249,   0.0126972;
 
   //create example matrix with sigma points in measurement space
   MatrixXd Zsig = MatrixXd(n_z, 2 * n_aug + 1);
@@ -432,10 +391,6 @@ void UKF::UpdateState(VectorXd* x_out, MatrixXd* P_out) {
   //create matrix for cross correlation Tc
   MatrixXd Tc = MatrixXd(n_x, n_z);
 
-/*******************************************************************************
- * Student part begin
- ******************************************************************************/
-
   //calculate cross correlation matrix
   Tc.fill(0.0);
   for (int i = 0; i < 2 * n_aug + 1; i++) {  //2n+1 simga points
@@ -447,12 +402,12 @@ void UKF::UpdateState(VectorXd* x_out, MatrixXd* P_out) {
     while (z_diff(1)<-M_PI) z_diff(1)+=2.*M_PI;
 
     // state difference
-    VectorXd x_diff = Xsig_pred.col(i) - x;
+    VectorXd x_diff = Xsig_pred_.col(i) - x_;
     //angle normalization
     while (x_diff(3)> M_PI) x_diff(3)-=2.*M_PI;
     while (x_diff(3)<-M_PI) x_diff(3)+=2.*M_PI;
 
-    Tc = Tc + weights(i) * x_diff * z_diff.transpose();
+    Tc = Tc + weights_(i) * x_diff * z_diff.transpose();
   }
 
   //Kalman gain K;
@@ -466,16 +421,11 @@ void UKF::UpdateState(VectorXd* x_out, MatrixXd* P_out) {
   while (z_diff(1)<-M_PI) z_diff(1)+=2.*M_PI;
 
   //update state mean and covariance matrix
-  x = x + K * z_diff;
-  P = P - K*S*K.transpose();
-
-/*******************************************************************************
- * Student part end
- ******************************************************************************/
+  x_ = x_ + K * z_diff;
+  P_ = P_ - K*S*K.transpose();
 
   //write result
-  *x_out = x;
-  *P_out = P;
-
+  *x_out = x_;
+  *P_out = P_;
 
 }
