@@ -131,9 +131,9 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
    *  Update
    ****************************************************************************/
    if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
-     UKF::UpdateRadar(meas_package.raw_measurements_);
+     UKF::UpdateRadar(meas_package);
    } else {
-     UKF::UpdateLidar(meas_package.raw_measurements_);
+     UKF::UpdateLidar(meas_package);
    }
 }
 
@@ -361,7 +361,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   MatrixXd K = Tc * S.inverse();
 
   //residual
-  VectorXd z_diff = meas_package - z_pred;
+  VectorXd z_diff = meas_package.raw_measurements_ - z_pred;
 
   //update state mean and covariance matrix
   x_ = x_ + K * z_diff;
@@ -472,7 +472,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   MatrixXd K = Tc * S.inverse();
 
   //residual
-  VectorXd z_diff = meas_package - z_pred;
+  VectorXd z_diff = meas_package.raw_measurements_ - z_pred;
 
   //angle normalization
   while (z_diff(1)> M_PI) z_diff(1)-=2.*M_PI;
