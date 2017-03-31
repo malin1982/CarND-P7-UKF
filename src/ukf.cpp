@@ -58,6 +58,7 @@ UKF::UKF() {
   weights_ = VectorXd(2*n_aug_+1);
 
   lambda_ = 3 - n_aug_;
+
   NIS_radar_ = 0;
   NIS_laser_ = 0;
 }
@@ -123,10 +124,20 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
    ****************************************************************************/
   double delta_t = (meas_package.timestamp_ - time_us_) / 1000000.0;	//dt - expressed in seconds
   time_us_ = meas_package.timestamp_;
-
-  if (delta_t > 0.0001) {
+  /*
+  while (delta_t > 0.1 ) {
+    const double dt = 0.1;
+    UKF::Prediction(dt);
+    delta_t -= dt;
+  }
+  */
+  if (delta_t == 0) {
+    const double dt = 0.1;
+    UKF::Prediction(dt);
+  } else {
     UKF::Prediction(delta_t);
   }
+
   /*****************************************************************************
    *  Update
    ****************************************************************************/
@@ -304,11 +315,17 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 
   //transform sigma points into measurement space
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //2n+1 simga points
+    double px = Xsig_pred_(0,i);
+    double py = Xsig_pred_(1,i);
 
-    // measurement model
-    Zsig(0,i) = Xsig_pred_(0,i);                        //px
-    Zsig(1,i) = Xsig_pred_(1,i);                        //py
-
+    if (px == 0 or py == 0 ) {
+      Zsig(0,i) = 0;                        //px
+      Zsig(1,i) = 0;                        //py
+    } else {
+      // measurement model
+      Zsig(0,i) = Xsig_pred_(0,i);                        //px
+      Zsig(1,i) = Xsig_pred_(1,i);                        //py
+    }
   }
 
   //mean predicted measurement
@@ -408,11 +425,17 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
     double v1 = cos(yaw)*v;
     double v2 = sin(yaw)*v;
+    if (p_x == 0 or p_y == 0 ) {
+      Zsig(0,i) = 0;                        //r
+      Zsig(1,i) = 0;                        //phi
+      Zsig(2,i) = 0;   //r_dot
 
+    } else {
     // measurement model
     Zsig(0,i) = sqrt(p_x*p_x + p_y*p_y);                        //r
     Zsig(1,i) = atan2(p_y,p_x);                                 //phi
     Zsig(2,i) = (p_x*v1 + p_y*v2 ) / sqrt(p_x*p_x + p_y*p_y);   //r_dot
+    }
   }
 
   //mean predicted measurement
