@@ -17,8 +17,7 @@ Self-Driving Car Engineer Nanodegree Program
    * On windows, you may need to run: `cmake .. -G "Unix Makefiles" && make`
 4. Run it: `open UnscentedKF.xcodeproj/`
 5. Edit scheme within Xcode: shortcut: cmdkey+< Fill in arguments passed on Luanch.
-   ../../data/sample-laser-radar-measurement-data-2.txt
-   output.txt
+   ../../data/sample-laser-radar-measurement-data-2.txt and ./output.txt
 ## Known Issue
 
 1. It works on sample data1, hangs when using sample data2 as input. Problem seems to be the normalization `while()` loop at the prediction step.
