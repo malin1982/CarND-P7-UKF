@@ -7,6 +7,7 @@
 #include <string>
 #include <fstream>
 #include "tools.h"
+#include <cmath>
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -31,6 +32,9 @@ public:
 
   ///* predicted sigma points matrix
   MatrixXd Xsig_pred_;
+
+  ///* previous measurement
+  MeasurementPackage previous_measurement_;
 
   ///* time when the state is true, in us
   long long time_us_;
@@ -108,6 +112,26 @@ public:
    * @param meas_package The measurement at k+1
    */
   void UpdateRadar(MeasurementPackage meas_package);
+
+  void GenerateAugmentedSigmaPoints(const VectorXd &x, const MatrixXd &P, MatrixXd &Xsig_aug);
+  void SigmaPointPrediction(double delta_t, const MatrixXd &Xsig_aug, MatrixXd &Xsig_pred);
+    
+  void PredictMeanAndCovariance(const MatrixXd &Xsig_pred, VectorXd &x, MatrixXd &P);
+    
+  void PredictLidarMeasurement(const MatrixXd &Xsig_pred, MatrixXd &Ysig, VectorXd &y_pred, MatrixXd &S);
+  void PredictRadarMeasurement(const MatrixXd &Xsig_pred, MatrixXd &Zsig, VectorXd &z_pred, MatrixXd &S);
+  void UpdateState(const VectorXd &z, const VectorXd &z_pred, const MatrixXd &S,
+                     const MatrixXd &Xsig_pred, const MatrixXd &Zsig, VectorXd &x, MatrixXd &P);
 };
+
+template<typename T>
+T normalizeRadianPi(T rad) {
+    static const T PI2 = 2.*M_PI;
+    // Copy the sign of the value in radians to the value of pi.
+    T signed_pi = std::copysign(M_PI,rad);
+    // Set the value of difference to the appropriate signed value between pi and -pi.
+    rad = std::fmod(rad + signed_pi,(PI2)) - signed_pi;
+    return rad;
+}
 
 #endif /* UKF_H */
