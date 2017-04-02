@@ -124,6 +124,9 @@ public:
                      const MatrixXd &Xsig_pred, const MatrixXd &Zsig, VectorXd &x, MatrixXd &P);
 };
 
+// refer http://stackoverflow.com/questions/4633177/c-how-to-wrap-a-float-to-the-interval-pi-pi
+// Bring the 'difference' between two angles into [-pi; pi].
+
 template<typename T>
 T normalizeRadianPi(T rad) {
     static const T PI2 = 2.*M_PI;
