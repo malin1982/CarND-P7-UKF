@@ -13,11 +13,14 @@ Self-Driving Car Engineer Nanodegree Program
 
 1. Clone this repo.
 2. Make a build directory: `mkdir build && cd build`
-3. Compile: `cmake .. && make`
-4. Run it: `./UnscentedKF path/to/input.txt path/to/output.txt`. You can find
-   some sample inputs in 'data/'.
-    - eg. `./UnscentedKF ../data/sample-laser-radar-measurement-data-1.txt output.txt`
+3. Compile on Mac: `cmake -G Xcode ..`
+   * On windows, you may need to run: `cmake .. -G "Unix Makefiles" && make`
+4. Run it: `open UnscentedKF.xcodeproj/`
+5. Edit scheme within Xcode: shortcut: cmdkey+< Fill in arguments passed on Luanch.
+   ../../data/sample-laser-radar-measurement-data-2.txt and ./output.txt
+## Known Issue
 
+1. It works on sample data1, hangs when using sample data2 as input. Problem seems to be the normalization `while()` loop at the prediction step.
 ## Editor Settings
 
 We've purposefully kept editor configuration files out of this repo in order to
