@@ -40,14 +40,14 @@ Please stick to [Google's C++ style guide](https://google.github.io/styleguide/c
 ## Results
 Data1
 Accuracy - RMSE:
-0.167695
-0.195717
-0.723887
-0.788733
+0.0630382
+0.0710885
+0.56145
+0.560546
 
 Data2
 Accuracy - RMSE:
-0.184855
-0.182395
-0.42336
-0.386014
+0.176916
+0.182664
+0.293639
+0.341568
